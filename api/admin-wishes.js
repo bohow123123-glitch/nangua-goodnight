@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
   try {
     const r = await fetch(
-      `${supabaseUrl}/rest/v1/birthday_wishes?select=id,created_at,destination,place,food,wish&order=created_at.desc`,
+      `${supabaseUrl}/rest/v1/birthday_wishes?select=id,created_at,tonight_choice,destination,place,food,wish&order=created_at.desc`,
       {
         headers: {
           "apikey": secretKey,

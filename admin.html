@@ -36,7 +36,7 @@ th{background:#efe1b8;position:sticky;top:0} td.wish{white-space:pre-wrap;min-wi
     </div>
     <div class="table-wrap card" style="padding:0">
       <table>
-        <thead><tr><th>填寫時間</th><th>生日選擇</th><th>想去哪裡</th><th>想吃什麼</th><th>其他願望</th></tr></thead>
+        <thead><tr><th>填寫時間</th><th>今晚抽到</th><th>生日選擇</th><th>想去哪裡</th><th>想吃什麼</th><th>其他願望</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
       <div id="empty" class="empty" style="display:none">目前還沒有願望資料。</div>
@@ -55,7 +55,7 @@ async function loadRows(){
   const data=await r.json(), rows=data.rows||[];
   document.getElementById("loginBox").style.display="none"; document.getElementById("adminBox").style.display="block";
   document.getElementById("countText").textContent=`目前共 ${rows.length} 筆`;
-  document.getElementById("rows").innerHTML=rows.map(x=>`<tr><td>${esc(fmtTime(x.created_at))}</td><td><span class="badge">${esc(x.destination)}</span></td><td>${esc(x.place)}</td><td>${esc(x.food)}</td><td class="wish">${esc(x.wish)}</td></tr>`).join("");
+  document.getElementById("rows").innerHTML=rows.map(x=>`<tr><td>${esc(fmtTime(x.created_at))}</td><td>${esc(x.tonight_choice || "—")}</td><td><span class="badge">${esc(x.destination)}</span></td><td>${esc(x.place)}</td><td>${esc(x.food)}</td><td class="wish">${esc(x.wish)}</td></tr>`).join("");
   document.getElementById("empty").style.display=rows.length?"none":"block";
 }
 document.getElementById("loginBtn").addEventListener("click",()=>{password=document.getElementById("password").value;loadRows()});

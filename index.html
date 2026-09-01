@@ -536,6 +536,7 @@ const eveningPlans = [
   {icon:"📞", title:"留一點時間給我", text:"明天開始我要去北部幾天。今晚有空的話，讓我再多陪一下南瓜 ♡"},
   {icon:"🎂", title:"抽到隱藏行程！", text:"某人的生日越來越近了……是不是可以偷偷開始想：生日最想幹嘛？ 👀"}
 ];
+let selectedEveningPlan = "";
 const drawPlanBtn = document.getElementById("drawPlanBtn");
 if (drawPlanBtn) {
   drawPlanBtn.addEventListener("click", () => {
@@ -543,6 +544,8 @@ if (drawPlanBtn) {
     document.getElementById("planIcon").textContent = p.icon;
     document.getElementById("planTitle").textContent = p.title;
     document.getElementById("planText").textContent = p.text;
+    selectedEveningPlan = p.title;
+    try { localStorage.setItem("南瓜今晚抽到", selectedEveningPlan); } catch (e) {}
     drawPlanBtn.textContent = "再抽一次 ↻";
   });
 }
@@ -569,7 +572,10 @@ if (saveBirthdayBtn) {
     const place = document.getElementById("birthdayPlace").value.trim();
     const food = document.getElementById("birthdayFood").value.trim();
     const wish = document.getElementById("birthdayWish").value.trim();
-    const data = { destination: selectedDestination, place, food, wish };
+    if (!selectedEveningPlan) {
+      try { selectedEveningPlan = localStorage.getItem("南瓜今晚抽到") || ""; } catch (e) {}
+    }
+    const data = { tonight_choice: selectedEveningPlan, destination: selectedDestination, place, food, wish };
 
     try {
       localStorage.setItem("南瓜生日願望_v2", JSON.stringify(data));

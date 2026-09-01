@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { destination, place = "", food = "", wish = "" } = req.body || {};
+  const { tonight_choice = "", destination, place = "", food = "", wish = "" } = req.body || {};
   if (!destination || typeof destination !== "string") {
     return res.status(400).json({ error: "Missing destination" });
   }
@@ -24,6 +24,7 @@ export default async function handler(req, res) {
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({
+        tonight_choice: String(tonight_choice).slice(0, 150),
         destination: destination.slice(0, 100),
         place: String(place).slice(0, 300),
         food: String(food).slice(0, 300),
