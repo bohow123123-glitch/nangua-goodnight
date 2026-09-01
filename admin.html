@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>南瓜生日願望後台</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#2f2a23;background:#f7f0df}
+*{box-sizing:border-box} body{margin:0;padding:28px}.wrap{max-width:1050px;margin:auto}
+h1{margin:0 0 8px}.sub{opacity:.65;margin-bottom:22px}
+.card{background:#fffdf7;border:1px solid #e2d4b7;border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(70,55,35,.07);margin-bottom:16px}
+.login{max-width:440px;margin:80px auto} input,button{font:inherit}
+input{width:100%;padding:13px 14px;border:1px solid #cbb991;border-radius:12px;margin:10px 0}
+button{border:0;border-radius:12px;padding:12px 16px;background:#3f5d45;color:white;cursor:pointer}
+button.secondary{background:#8b7656}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.table-wrap{overflow:auto;border-radius:16px} table{width:100%;border-collapse:collapse;background:#fffdf7;min-width:820px}
+th,td{padding:13px 12px;border-bottom:1px solid #eadfc9;text-align:left;vertical-align:top}
+th{background:#efe1b8;position:sticky;top:0} td.wish{white-space:pre-wrap;min-width:220px}
+.empty{text-align:center;padding:45px;opacity:.6}.error{color:#a33}.badge{display:inline-block;background:#efe1b8;border-radius:999px;padding:4px 9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="loginBox" class="card login">
+    <h1>南瓜生日願望後台 🎂</h1>
+    <p class="sub">輸入後台密碼後查看她填過的資料。</p>
+    <input id="password" type="password" placeholder="輸入後台密碼" autocomplete="current-password">
+    <button id="loginBtn">查看願望</button>
+    <p id="loginError" class="error"></p>
+  </div>
+
+  <div id="adminBox" style="display:none">
+    <div class="toolbar">
+      <div><h1>南瓜生日願望 🎂</h1><div class="sub" id="countText"></div></div>
+      <button class="secondary" id="refreshBtn">重新整理</button>
+    </div>
+    <div class="table-wrap card" style="padding:0">
+      <table>
+        <thead><tr><th>填寫時間</th><th>生日選擇</th><th>想去哪裡</th><th>想吃什麼</th><th>其他願望</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty" class="empty" style="display:none">目前還沒有願望資料。</div>
+    </div>
+  </div>
+</div>
+<script>
+let password = "";
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function fmtTime(v){try{return new Date(v).toLocaleString("zh-TW",{timeZone:"Asia/Taipei"})}catch(e){return v||""}}
+async function loadRows(){
+  const loginError=document.getElementById("loginError"); loginError.textContent="";
+  const r=await fetch("/api/admin-wishes",{headers:{"x-admin-password":password}});
+  if(r.status===401){document.getElementById("adminBox").style.display="none";document.getElementById("loginBox").style.display="block";loginError.textContent="密碼不正確。";return}
+  if(!r.ok){loginError.textContent="後台讀取失敗，請稍後再試。";return}
+  const data=await r.json(), rows=data.rows||[];
+  document.getElementById("loginBox").style.display="none"; document.getElementById("adminBox").style.display="block";
+  document.getElementById("countText").textContent=`目前共 ${rows.length} 筆`;
+  document.getElementById("rows").innerHTML=rows.map(x=>`<tr><td>${esc(fmtTime(x.created_at))}</td><td><span class="badge">${esc(x.destination)}</span></td><td>${esc(x.place)}</td><td>${esc(x.food)}</td><td class="wish">${esc(x.wish)}</td></tr>`).join("");
+  document.getElementById("empty").style.display=rows.length?"none":"block";
+}
+document.getElementById("loginBtn").addEventListener("click",()=>{password=document.getElementById("password").value;loadRows()});
+document.getElementById("password").addEventListener("keydown",e=>{if(e.key==="Enter"){password=e.target.value;loadRows()}});
+document.getElementById("refreshBtn").addEventListener("click",loadRows);
+</script>
+</body>
+</html>

@@ -560,27 +560,57 @@ document.querySelectorAll(".destination-card").forEach(card => {
 });
 const saveBirthdayBtn = document.getElementById("saveBirthdayBtn");
 if (saveBirthdayBtn) {
-  saveBirthdayBtn.addEventListener("click", () => {
+  saveBirthdayBtn.addEventListener("click", async () => {
     if (!selectedDestination) {
       toast("先幫我選一個生日方向嘛 🎂");
       return;
     }
+
     const place = document.getElementById("birthdayPlace").value.trim();
     const food = document.getElementById("birthdayFood").value.trim();
     const wish = document.getElementById("birthdayWish").value.trim();
-    const data = {destination:selectedDestination, place, food, wish};
-    try { localStorage.setItem("南瓜生日願望_v2", JSON.stringify(data)); } catch(e) {}
-    const result = document.getElementById("birthdayResult");
-    const thanks = document.getElementById("birthdayThanks");
-    if (thanks) {
-      thanks.innerHTML = "收到 ♡<br><b>" + selectedDestination + "</b>" +
-        (place ? "<br>想去：" + place : "") +
-        (food ? "<br>想吃：" + food : "") +
-        (wish ? "<br>還想：" + wish : "") +
-        "<br><br>我先偷偷記起來，不准反悔 🎂";
+    const data = { destination: selectedDestination, place, food, wish };
+
+    try {
+      localStorage.setItem("南瓜生日願望_v2", JSON.stringify(data));
+    } catch (e) {}
+
+    const originalText = saveBirthdayBtn.textContent;
+    saveBirthdayBtn.disabled = true;
+    saveBirthdayBtn.textContent = "正在偷偷送出願望… 💌";
+
+    try {
+      const response = await fetch("/api/wish", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+
+      const resultData = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(resultData.error || "送出失敗");
+
+      const result = document.getElementById("birthdayResult");
+      const thanks = document.getElementById("birthdayThanks");
+      if (thanks) {
+        thanks.innerHTML =
+          "收到 ♡<br><b>" + selectedDestination + "</b>" +
+          (place ? "<br>想去：" + place : "") +
+          (food ? "<br>想吃：" + food : "") +
+          (wish ? "<br>還想：" + wish : "") +
+          "<br><br>我先偷偷記起來，不准反悔 🎂";
+      }
+      if (result) result.style.display = "block";
+      toast("生日願望真的送到我這邊啦 ♡");
+      saveBirthdayBtn.textContent = "願望已送出 ✓";
+    } catch (err) {
+      toast("剛剛網路沒有送成功，但手機裡有先幫妳留著 ♡");
+      saveBirthdayBtn.textContent = "再送一次 💌";
+    } finally {
+      saveBirthdayBtn.disabled = false;
+      if (saveBirthdayBtn.textContent === "正在偷偷送出願望… 💌") {
+        saveBirthdayBtn.textContent = originalText;
+      }
     }
-    if (result) result.style.display = "block";
-    toast("生日願望收到啦 ♡");
   });
 }
 
